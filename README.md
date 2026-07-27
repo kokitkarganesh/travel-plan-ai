@@ -1,156 +1,125 @@
-# AI Travel Planning System using LangGraph
+# ✈️ AI Travel Planning System (LangGraph Multi-Agent)
 
-This project is a Real-World Multi-Agent AI System built using LangGraph.
+A real-world multi-agent AI system that plans a complete trip automatically — flights, hotels, and a day-by-day itinerary — using **LangGraph**, **LangChain**, and **Groq's Llama 3.3 70B**, with a Streamlit web interface.
 
-The system uses 4 AI agents that work together to plan a complete trip automatically.
+🔗 **Live Demo:** [travel-plan-ai-stvmgwq2e6zarzqntdcy2g.streamlit.app](https://travel-plan-ai-stvmgwq2e6zarzqntdcy2g.streamlit.app/)
+
+---
+
+## Overview
+
+The system uses **4 cooperating AI agents**, orchestrated as a LangGraph state graph, to turn a single natural-language travel request into a complete trip plan:
+
+```
+User Query → Flight Agent → Hotel Agent → Itinerary Agent → Final Response Agent
+```
+
+Each agent has a focused responsibility, and their outputs are combined into one coherent travel plan — with conversation memory persisted across sessions using PostgreSQL.
 
 ## Features
 
-- ✈️ Flight Search Agent
-- 🏨 Hotel Search Agent
-- 🗓️ Itinerary Planning Agent
-- 🤖 Final Response Agent
-- 🧠 Memory using PostgreSQL
-- 🌐 Real-time API Integration
-- 💻 Streamlit Web Interface
+- ✈️ **Flight Search Agent** — fetches flight options in real time
+- 🏨 **Hotel Search Agent** — finds relevant hotel results via web search
+- 🗓️ **Itinerary Planning Agent** — builds a day-by-day travel plan
+- 🤖 **Final Response Agent** — synthesizes everything into one clear answer
+- 🧠 **Long-term memory** — conversation state persisted in PostgreSQL via LangGraph checkpointing
+- 🌐 **Real-time API integration** — live flight and web search data
+- 💻 **Streamlit web interface** — clean, interactive chat-style UI
 
----
+## Tech Stack
 
-# Tech Stack
+| Layer | Technology |
+|---|---|
+| Agent orchestration | LangGraph, LangChain |
+| LLM | Groq — Llama 3.3 70B |
+| Memory / persistence | PostgreSQL (via `langgraph-checkpoint-postgres`) |
+| Web interface | Streamlit |
+| Search | Tavily API |
+| Flight data | AviationStack API |
 
-- LangGraph
-- LangChain
-- Groq
-- Llama 3.3 70B
-- PostgreSQL
-- Streamlit
-- Tavily API
-- AviationStack API
+## Architecture
 
----
+```
+┌──────────────┐   ┌──────────────┐   ┌───────────────────┐   ┌────────────────┐
+│ Flight Agent │ → │ Hotel Agent  │ → │ Itinerary Agent    │ → │ Final Response │
+│ (AviationStack)│  │ (Tavily)     │   │ (Groq / Llama 3.3) │   │ Agent          │
+└──────────────┘   └──────────────┘   └───────────────────┘   └────────────────┘
+        │                                                              │
+        └──────────────────── PostgreSQL Checkpoint Memory ────────────┘
+```
 
-# Step 1: Create Python Environment
+## Running Locally
 
-Open the terminal inside the project folder and run:
+### 1. Clone and set up the environment
+```bash
+git clone https://github.com/kokitkarganesh/travel-plan-ai.git
+cd travel-plan-ai
+python -m venv langgraph_env3
+langgraph_env3\Scripts\activate   # Windows
+```
 
-		python -m venv langgraph_env3
+### 2. Install dependencies
+```bash
+pip install -r requirements.txt
+```
 
+### 3. Set up PostgreSQL
+Create a database (locally or via a hosted provider like Render/Supabase):
+```sql
+CREATE DATABASE langgraph_memory;
+```
 
-Now activate the environment:
-
-#### Windows
-
-		langgraph_env3\Scripts\activate
-
-
-#### YouTube Tuturial (Hindi) - https://youtu.be/ctHby5vhDqg
-
-#### YouTube Tuturial (English) -  https://youtu.be/_5XF5CCnbDk
-
----
-
-# Step 2: Install Dependencies
-
-Run the following command:
-
-		pip install langgraph langchain langchain-openai langchain-groq langchain-community langchain-tavily psycopg[binary] psycopg_pool python-dotenv tavily-python requests streamlit
-
-		pip install -U "psycopg[binary,pool]"  langgraph-checkpoint-postgres
-
----
-
-# Step 3: Install PostgreSQL
-
-Download and install PostgreSQL: https://www.postgresql.org/download/
-
-⚠️ Important:
-While installing PostgreSQL, remember:
-- PostgreSQL Password
-- Port Number
-
-You will need them later while creating the database connection string.
-
----
-
-# Step 4: Create Database
-
-Open PostgreSQL and run:
-
-CREATE DATABASE langgraph_memory_demo;
-
-
----
-
-# Step 5: Setup `.env` File
-
-Create a `.env` file inside the project folder.
-
-Add the following keys:
-
+### 4. Configure environment variables
+Create a `.env` file in the project root:
+```
 GROQ_API_KEY=your_groq_api_key
-
 TAVILY_API_KEY=your_tavily_api_key
-
 AVIATIONSTACK_API_KEY=your_aviationstack_api_key
+DATABASE_URL=postgresql://user:password@host:port/langgraph_memory
+```
 
-DATABASE_URL=postgresql://postgres:postgres@localhost:5433/langgraph_memory_demo
+Get your keys here:
+- Groq → [console.groq.com](https://console.groq.com)
+- Tavily → [tavily.com](https://tavily.com)
+- AviationStack → [aviationstack.com](https://aviationstack.com)
 
+### 5. Run it
 
----
+**Terminal (test the agent pipeline directly):**
+```bash
+python main.py
+```
 
-# Step 6: Get API Keys
+**Web app:**
+```bash
+streamlit run frontend.py
+```
 
-## Get Groq API Key
+## Example Prompt
 
-https://console.groq.com
-
----
-
-## Get Tavily API Key
-
-https://tavily.com
-  
----
-
-## Get AviationStack API Key
-
-https://aviationstack.com
-
----
-
-# Step 7: Run the Application
-
-#### Run Multi-Agent System in Terminal
-
-		python main.py
-
-
-This will test the multi-agent system through the terminal.
-
----
-
-#### Run Streamlit Web App
-
-
-		streamlit run frontend.py
-
-
-This will launch the Multi-Agent AI web application.
-
----
-
-#### Example Prompt
-
+```
 Plan a complete 7 days Japan trip including flights, hotels and sightseeing under 2 lakhs.
+```
 
+## Deployment
 
----
+This app is deployed on **Streamlit Community Cloud**, with a managed PostgreSQL database for persistent memory. Environment variables are configured via Streamlit's Secrets manager rather than a committed `.env` file.
 
-# Project Workflow
+## Project Structure
 
-1. Flight Agent searches flights
-2. Hotel Agent searches hotels
-3. Itinerary Agent creates travel plan
-4. Final Agent combines everything together
-5. PostgreSQL stores conversation memory
+```
+travel-plan-ai/
+├── main.py              # LangGraph agent pipeline (CLI entry point)
+├── frontend.py           # Streamlit web interface
+├── tools/
+│   ├── flight_tool.py     # AviationStack flight search
+│   └── tavily_tool.py     # Tavily hotel/web search
+├── requirements.txt
+└── README.md
+```
 
+## Author
+
+**Ganesh Kokitkar**
+- GitHub: [github.com/kokitkarganesh](https://github.com/kokitkarganesh)
+- LinkedIn: [linkedin.com/in/ganesh-kokitkar](https://linkedin.com/in/ganesh-kokitkar)
